@@ -45,7 +45,6 @@ use smithay::{
     },
 };
 use wayland_protocols::xdg::shell::server::xdg_toplevel;
-use wde_compositor::{WindowId, WindowManager};
 use wayland_server::{
     Client, ListeningSocket,
     backend::{ClientData, ClientId, DisconnectReason},
@@ -54,6 +53,7 @@ use wayland_server::{
         wl_surface::{self, WlSurface},
     },
 };
+use wde_compositor::{WindowId, WindowManager};
 
 struct App {
     compositor_state: CompositorState,
