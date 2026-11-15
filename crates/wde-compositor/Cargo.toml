@@ -6,4 +6,11 @@ rust-version.workspace = true
 license.workspace = true
 description = "Wayland compositor and window-management implementation."
 
+[features]
+default = []
+# Initial nested-compositor development backend. Keep Smithay's broad default
+# feature set disabled; enable only the backend needed for the prototype.
+nested-winit = ["dep:smithay"]
+
 [dependencies]
+smithay = { version = "0.7.0", default-features = false, features = ["backend_winit", "renderer_gl", "wayland_frontend"], optional = true }
