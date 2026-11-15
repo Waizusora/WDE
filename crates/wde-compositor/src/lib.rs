@@ -190,9 +190,7 @@ impl WindowManager {
             window.state = state;
         }
 
-        if self.focused == Some(id)
-            && matches!(state, WindowState::Minimized | WindowState::Closed)
-        {
+        if self.focused == Some(id) && matches!(state, WindowState::Minimized | WindowState::Closed) {
             self.focused = self
                 .windows
                 .values()
