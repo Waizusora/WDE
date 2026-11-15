@@ -1,0 +1,8 @@
+# Initial WDE panel defaults
+position = "bottom"
+visible = true
+autohide = false
+show_application_menu = true
+show_task_list = true
+show_system_tray = true
+show_clock = true
