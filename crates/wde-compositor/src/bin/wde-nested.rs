@@ -212,7 +212,13 @@ fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
                     );
                 }
                 InputEvent::PointerMotionAbsolute { .. } => {
-                    if let Some(surface) = state.xdg_shell_state.toplevel_surfaces().iter().next().cloned() {
+                    if let Some(surface) = state
+                        .xdg_shell_state
+                        .toplevel_surfaces()
+                        .iter()
+                        .next()
+                        .cloned()
+                    {
                         keyboard.set_focus(&mut state, Some(surface.wl_surface().clone()), 0.into());
                     }
                 }
