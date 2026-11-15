@@ -28,9 +28,11 @@ The three circular controls are ordered close (red), maximize/restore (yellow), 
 
 ## Display protocol and framework
 
-Wayland is the display protocol target. Smithay is a candidate compositor framework, subject to a feature-by-feature and full dependency-tree license audit before it is added to the workspace.
+Wayland is the display protocol target. Smithay 0.7.0 is the selected initial compositor framework candidate. Its crate manifest declares MIT and requires Rust 1.87. The workspace minimum Rust version is therefore 1.87.
 
-Keep WDE-facing interfaces independent of Smithay-specific types where practical. This preserves the option to replace implementation details later.
+Smithay is a low-level compositor framework: it supplies OS/backend and Wayland protocol helpers, but WDE still owns its window-management policy, decorations, panel, launcher, and visual design. The initial optional `nested-winit` feature is intended for development inside an existing desktop session. Smithay default features remain disabled to avoid enabling unrelated backends and renderers.
+
+Before enabling the feature in release builds, audit the complete resolved dependency tree and every selected protocol/asset license. The project policy excludes GPL, LGPL, and AGPL dependencies. Keep WDE-facing interfaces independent of Smithay-specific types where practical.
 
 ## Visual system
 
