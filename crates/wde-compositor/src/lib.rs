@@ -107,7 +107,6 @@ pub struct ManagedWindow {
 /// Errors returned by the backend-independent window registry.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WindowManagerError {
-    DuplicateWindow(WindowId),
     UnknownWindow(WindowId),
     IdentifierExhausted,
 }
@@ -144,10 +143,17 @@ impl WindowManager {
     /// Register a new toplevel and focus it. IDs are monotonic and never reused.
     pub fn register(&mut self, title: impl Into<String>) -> Result<WindowId, WindowManagerError> {
         let id = self.next_id;
-        self.next_id = id.checked_add(1).ok_or(WindowManagerError::IdentifierExhausted)?;
+        self.next_id = id
+            .checked_add(1)
+            .ok_or(WindowManagerError::IdentifierExhausted)?;
+
         self.windows.insert(
             id,
-            ManagedWindow { id, title: title.into(), state: WindowState::Normal },
+            ManagedWindow {
+                id,
+                title: title.into(),
+                state: WindowState::Normal,
+            },
         );
         self.lifecycles.insert(id, WindowLifecycle::new());
         self.focused = Some(id);
@@ -156,7 +162,10 @@ impl WindowManager {
 
     /// Focus an existing, non-minimized toplevel.
     pub fn focus(&mut self, id: WindowId) -> Result<(), WindowManagerError> {
-        let window = self.windows.get(&id).ok_or(WindowManagerError::UnknownWindow(id))?;
+        let window = self
+            .windows
+            .get(&id)
+            .ok_or(WindowManagerError::UnknownWindow(id))?;
         if window.state != WindowState::Minimized {
             self.focused = Some(id);
         }
@@ -169,16 +178,30 @@ impl WindowManager {
         id: WindowId,
         action: WindowAction,
     ) -> Result<WindowState, WindowManagerError> {
-        let lifecycle = self.lifecycles.get_mut(&id).ok_or(WindowManagerError::UnknownWindow(id))?;
-        let state = lifecycle.apply(action).map_err(|_| WindowManagerError::UnknownWindow(id))?;
+        let lifecycle = self
+            .lifecycles
+            .get_mut(&id)
+            .ok_or(WindowManagerError::UnknownWindow(id))?;
+        let state = lifecycle
+            .apply(action)
+            .map_err(|_| WindowManagerError::UnknownWindow(id))?;
+
         if let Some(window) = self.windows.get_mut(&id) {
             window.state = state;
         }
 
-        if self.focused == Some(id) && matches!(state, WindowState::Minimized | WindowState::Closed) {
-            self.focused = self.windows.values()
+        if self.focused == Some(id)
+            && matches!(state, WindowState::Minimized | WindowState::Closed)
+        {
+            self.focused = self
+                .windows
+                .values()
                 .rev()
-                .find(|window| window.id != id && window.state != WindowState::Minimized && window.state != WindowState::Closed)
+                .find(|window| {
+                    window.id != id
+                        && window.state != WindowState::Minimized
+                        && window.state != WindowState::Closed
+                })
                 .map(|window| window.id);
         } else if action == WindowAction::Restore {
             self.focused = Some(id);
@@ -193,10 +216,17 @@ impl WindowManager {
 
     /// Remove a destroyed Wayland surface and choose a remaining visible focus target.
     pub fn unregister(&mut self, id: WindowId) -> Result<ManagedWindow, WindowManagerError> {
-        let window = self.windows.remove(&id).ok_or(WindowManagerError::UnknownWindow(id))?;
+        let window = self
+            .windows
+            .remove(&id)
+            .ok_or(WindowManagerError::UnknownWindow(id))?;
         self.lifecycles.remove(&id);
+
         if self.focused == Some(id) {
-            self.focused = self.windows.values().rev()
+            self.focused = self
+                .windows
+                .values()
+                .rev()
                 .find(|candidate| candidate.state != WindowState::Minimized)
                 .map(|candidate| candidate.id);
         }
@@ -211,8 +241,14 @@ mod tests {
     #[test]
     fn maximize_button_toggles_normal_and_maximized() {
         let mut window = WindowLifecycle::new();
-        assert_eq!(window.apply(WindowAction::MaximizeOrRestore), Ok(WindowState::Maximized));
-        assert_eq!(window.apply(WindowAction::MaximizeOrRestore), Ok(WindowState::Normal));
+        assert_eq!(
+            window.apply(WindowAction::MaximizeOrRestore),
+            Ok(WindowState::Maximized)
+        );
+        assert_eq!(
+            window.apply(WindowAction::MaximizeOrRestore),
+            Ok(WindowState::Normal)
+        );
     }
 
     #[test]
@@ -229,7 +265,10 @@ mod tests {
     fn close_is_terminal() {
         let mut window = WindowLifecycle::new();
         window.apply(WindowAction::Close).unwrap();
-        assert_eq!(window.apply(WindowAction::Restore), Err(WindowActionError::AlreadyClosed));
+        assert_eq!(
+            window.apply(WindowAction::Restore),
+            Err(WindowActionError::AlreadyClosed)
+        );
     }
 
     #[test]
@@ -237,6 +276,7 @@ mod tests {
         let mut manager = WindowManager::new();
         let first = manager.register("Terminal").unwrap();
         let second = manager.register("Settings").unwrap();
+
         assert_eq!((first, second), (0, 1));
         assert_eq!(manager.focused(), Some(second));
         assert_eq!(manager.get(first).unwrap().title, "Terminal");
@@ -247,7 +287,11 @@ mod tests {
         let mut manager = WindowManager::new();
         let first = manager.register("Terminal").unwrap();
         let second = manager.register("Editor").unwrap();
-        assert_eq!(manager.apply(second, WindowAction::Minimize), Ok(WindowState::Minimized));
+
+        assert_eq!(
+            manager.apply(second, WindowAction::Minimize),
+            Ok(WindowState::Minimized)
+        );
         assert_eq!(manager.focused(), Some(first));
         assert_eq!(manager.focus(second), Ok(()));
         assert_eq!(manager.focused(), Some(first));
@@ -258,7 +302,11 @@ mod tests {
         let mut manager = WindowManager::new();
         let first = manager.register("Terminal").unwrap();
         let second = manager.register("Editor").unwrap();
-        assert_eq!(manager.apply(second, WindowAction::Close), Ok(WindowState::Closed));
+
+        assert_eq!(
+            manager.apply(second, WindowAction::Close),
+            Ok(WindowState::Closed)
+        );
         assert!(manager.get(second).is_none());
         assert_eq!(manager.focused(), Some(first));
     }
@@ -266,6 +314,9 @@ mod tests {
     #[test]
     fn unregistering_unknown_window_is_reported() {
         let mut manager = WindowManager::new();
-        assert_eq!(manager.unregister(42), Err(WindowManagerError::UnknownWindow(42)));
+        assert_eq!(
+            manager.unregister(42),
+            Err(WindowManagerError::UnknownWindow(42))
+        );
     }
 }
