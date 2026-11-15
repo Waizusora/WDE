@@ -12,44 +12,46 @@ use smithay::{
     backend::{
         input::{InputEvent, KeyboardKeyEvent},
         renderer::{
+            Color32F, Frame, Renderer,
             element::{
-                surface::{render_elements_from_surface_tree, WaylandSurfaceRenderElement},
                 Kind,
+                surface::{WaylandSurfaceRenderElement, render_elements_from_surface_tree},
             },
             gles::GlesRenderer,
             utils::{draw_render_elements, on_commit_buffer_handler},
-            Color32F, Frame, Renderer,
         },
         winit::{self, WinitEvent},
     },
     delegate_compositor, delegate_data_device, delegate_seat, delegate_shm, delegate_xdg_shell,
-    input::{keyboard::FilterResult, Seat, SeatHandler, SeatState},
-    reexports::wayland_server::{protocol::wl_seat, Display},
+    input::{Seat, SeatHandler, SeatState, keyboard::FilterResult},
+    reexports::wayland_server::{Display, protocol::wl_seat},
     utils::{Rectangle, Serial, Transform},
     wayland::{
         buffer::BufferHandler,
         compositor::{
-            with_surface_tree_downward, CompositorClientState, CompositorHandler, CompositorState,
-            SurfaceAttributes, TraversalAction,
+            CompositorClientState, CompositorHandler, CompositorState, SurfaceAttributes,
+            TraversalAction, with_surface_tree_downward,
         },
         selection::{
+            SelectionHandler,
             data_device::{
                 ClientDndGrabHandler, DataDeviceHandler, DataDeviceState, ServerDndGrabHandler,
             },
-            SelectionHandler,
         },
-        shell::xdg::{PopupSurface, PositionerState, ToplevelSurface, XdgShellHandler, XdgShellState},
+        shell::xdg::{
+            PopupSurface, PositionerState, ToplevelSurface, XdgShellHandler, XdgShellState,
+        },
         shm::{ShmHandler, ShmState},
     },
 };
 use wayland_protocols::xdg::shell::server::xdg_toplevel;
 use wayland_server::{
+    Client, ListeningSocket,
     backend::{ClientData, ClientId, DisconnectReason},
     protocol::{
         wl_buffer,
         wl_surface::{self, WlSurface},
     },
-    Client, ListeningSocket,
 };
 
 struct App {
@@ -187,8 +189,8 @@ fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
         seat,
     };
 
-    let socket_name = std::env::var("WDE_WAYLAND_DISPLAY")
-        .unwrap_or_else(|_| "wayland-wde".to_owned());
+    let socket_name =
+        std::env::var("WDE_WAYLAND_DISPLAY").unwrap_or_else(|_| "wayland-wde".to_owned());
     let listener = ListeningSocket::bind(&socket_name)?;
     eprintln!("WDE nested compositor listening on {socket_name}");
 
@@ -219,7 +221,11 @@ fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
                         .next()
                         .cloned()
                     {
-                        keyboard.set_focus(&mut state, Some(surface.wl_surface().clone()), 0.into());
+                        keyboard.set_focus(
+                            &mut state,
+                            Some(surface.wl_surface().clone()),
+                            0.into(),
+                        );
                     }
                 }
                 _ => {}
@@ -262,8 +268,8 @@ fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
             }
 
             if let Some(stream) = listener.accept()? {
-                let client = display_handle
-                    .insert_client(stream, Arc::new(ClientState::default()))?;
+                let client =
+                    display_handle.insert_client(stream, Arc::new(ClientState::default()))?;
                 clients.push(client);
             }
 
