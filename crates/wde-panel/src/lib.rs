@@ -68,11 +68,7 @@ impl PanelModel {
         &self.tasks
     }
 
-    pub fn add_task(
-        &mut self,
-        window_id: u64,
-        title: impl Into<String>,
-    ) -> Result<(), PanelError> {
+    pub fn add_task(&mut self, window_id: u64, title: impl Into<String>) -> Result<(), PanelError> {
         if self.tasks.iter().any(|task| task.window_id == window_id) {
             return Err(PanelError::DuplicateWindow(window_id));
         }
