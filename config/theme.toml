@@ -1,0 +1,22 @@
+# Initial monochrome theme defaults
+default = "black"
+
+[black]
+background = "#000000"
+foreground = "#FFFFFF"
+panel_background = "#111111"
+panel_foreground = "#FFFFFF"
+
+[white]
+background = "#FFFFFF"
+foreground = "#000000"
+panel_background = "#EEEEEE"
+panel_foreground = "#000000"
+
+[window_controls]
+close = "#EF4444"
+maximize_restore = "#EAB308"
+minimize = "#22C55E"
+order = ["close", "maximize_restore", "minimize"]
+shape = "circle"
+glyphs = false
