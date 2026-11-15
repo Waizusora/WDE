@@ -5,7 +5,7 @@
 //! decorations, panel rendering, robust input routing, and production DRM/TTY
 //! support are separate milestones.
 
-use std::{os::fd::OwnedFd, sync::Arc, time::Instant};
+use std::{collections::BTreeMap, os::fd::OwnedFd, sync::Arc, time::Instant};
 
 use ::winit::platform::pump_events::PumpStatus;
 use smithay::{
@@ -45,6 +45,7 @@ use smithay::{
     },
 };
 use wayland_protocols::xdg::shell::server::xdg_toplevel;
+use wde_compositor::{WindowId, WindowManager};
 use wayland_server::{
     Client, ListeningSocket,
     backend::{ClientData, ClientId, DisconnectReason},
@@ -61,6 +62,8 @@ struct App {
     seat_state: SeatState<Self>,
     data_device_state: DataDeviceState,
     seat: Seat<Self>,
+    window_manager: WindowManager,
+    window_surfaces: BTreeMap<WindowId, ToplevelSurface>,
 }
 
 #[derive(Default)]
@@ -83,6 +86,10 @@ impl XdgShellHandler for App {
     }
 
     fn new_toplevel(&mut self, surface: ToplevelSurface) {
+        if let Ok(id) = self.window_manager.register("Window") {
+            self.window_surfaces.insert(id, surface.clone());
+        }
+
         surface.with_pending_state(|state| {
             state.states.set(xdg_toplevel::State::Activated);
         });
@@ -97,6 +104,18 @@ impl XdgShellHandler for App {
         _positioner: PositionerState,
         _token: u32,
     ) {
+    }
+
+    fn toplevel_destroyed(&mut self, surface: ToplevelSurface) {
+        let id = self
+            .window_surfaces
+            .iter()
+            .find_map(|(id, managed)| (managed == &surface).then_some(*id));
+
+        if let Some(id) = id {
+            self.window_surfaces.remove(&id);
+            let _ = self.window_manager.unregister(id);
+        }
     }
 }
 
@@ -187,6 +206,8 @@ fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
         seat_state,
         data_device_state: DataDeviceState::new::<App>(&display_handle),
         seat,
+        window_manager: WindowManager::new(),
+        window_surfaces: BTreeMap::new(),
     };
 
     let socket_name =
@@ -215,11 +236,9 @@ fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 InputEvent::PointerMotionAbsolute { .. } => {
                     if let Some(surface) = state
-                        .xdg_shell_state
-                        .toplevel_surfaces()
-                        .iter()
-                        .next()
-                        .cloned()
+                        .window_manager
+                        .focused()
+                        .and_then(|id| state.window_surfaces.get(&id))
                     {
                         keyboard.set_focus(
                             &mut state,
