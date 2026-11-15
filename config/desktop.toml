@@ -1,0 +1,9 @@
+# Initial WDE desktop defaults
+theme = "black"
+panel_position = "bottom"
+panel_visible = true
+desktop_shortcuts = false
+top_dock = false
+animations = false
+transparency = false
+blur = false
