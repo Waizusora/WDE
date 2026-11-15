@@ -1,0 +1,9 @@
+[package]
+name = "wde-compositor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Wayland compositor and window-management implementation."
+
+[dependencies]
