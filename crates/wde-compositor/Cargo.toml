@@ -8,9 +8,23 @@ description = "Wayland compositor and window-management implementation."
 
 [features]
 default = []
-# Initial nested-compositor development backend. Keep Smithay's broad default
-# feature set disabled; enable only the backend needed for the prototype.
-nested-winit = ["dep:smithay"]
+# Development-only nested compositor. Native graphics dependencies remain opt-in.
+nested-winit = [
+    "dep:smithay",
+    "dep:winit",
+    "dep:wayland-protocols",
+    "dep:wayland-server",
+    "dep:tracing-subscriber",
+]
+
+[[bin]]
+name = "wde-nested"
+path = "src/bin/wde-nested.rs"
+required-features = ["nested-winit"]
 
 [dependencies]
 smithay = { version = "0.7.0", default-features = false, features = ["backend_winit", "renderer_gl", "wayland_frontend"], optional = true }
+winit = { version = "=0.31.0-beta.4", default-features = false, features = ["wayland", "wayland-dlopen", "x11"], optional = true }
+wayland-protocols = { version = "0.32.13", features = ["server", "unstable", "staging"], optional = true }
+wayland-server = { version = "0.31.13", optional = true }
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"], optional = true }
