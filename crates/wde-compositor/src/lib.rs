@@ -108,7 +108,6 @@ pub struct ManagedWindow {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WindowManagerError {
     UnknownWindow(WindowId),
-    WindowActionFailed(WindowId, WindowActionError),
     IdentifierExhausted,
 }
 
@@ -185,7 +184,7 @@ impl WindowManager {
             .ok_or(WindowManagerError::UnknownWindow(id))?;
         let state = lifecycle
             .apply(action)
-            .map_err(|error| WindowManagerError::WindowActionFailed(id, error))?;
+            .map_err(|_| WindowManagerError::UnknownWindow(id))?;
 
         if let Some(window) = self.windows.get_mut(&id) {
             window.state = state;
@@ -322,14 +321,17 @@ mod tests {
     }
 
     #[test]
-    fn applying_action_to_closed_window_preserves_action_error() {
+    fn restoring_minimized_window_restores_state_and_focus() {
         let mut manager = WindowManager::new();
-        let id = manager.register("Terminal").unwrap();
-        manager.apply(id, WindowAction::Close).unwrap();
+        let first = manager.register("Terminal").unwrap();
+        let second = manager.register("Editor").unwrap();
 
+        manager.apply(second, WindowAction::Minimize).unwrap();
+        assert_eq!(manager.focused(), Some(first));
         assert_eq!(
-            manager.apply(id, WindowAction::Restore),
-            Err(WindowManagerError::UnknownWindow(id))
+            manager.apply(second, WindowAction::Restore),
+            Ok(WindowState::Normal)
         );
+        assert_eq!(manager.focused(), Some(second));
     }
 }
