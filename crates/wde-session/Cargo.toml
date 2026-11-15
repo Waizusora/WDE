@@ -1,0 +1,9 @@
+[package]
+name = "wde-session"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Desktop session startup and shutdown."
+
+[dependencies]
