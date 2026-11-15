@@ -1,0 +1,9 @@
+[package]
+name = "wde-theme"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Monochrome theme definitions and styling tokens."
+
+[dependencies]
