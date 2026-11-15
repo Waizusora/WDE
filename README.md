@@ -53,7 +53,7 @@ cargo test --workspace
 cargo clippy --workspace --all-targets -- -D warnings
 ```
 
-The initial crates are architectural placeholders. A working Wayland compositor and desktop session are not available yet.
+The workspace currently contains architectural crate scaffolds. Smithay 0.7.0 is wired as an optional dependency for the `nested-winit` development feature; a working compositor, window decorations, and desktop session are not available yet. Smithay's default features are disabled. The nested backend is a development milestone, not the final direct-to-hardware session backend.
 
 ## Dependency and licensing policy
 
@@ -64,7 +64,7 @@ Wayland protocol compatibility does not by itself determine the license of every
 ## Roadmap
 
 1. Workspace and project policies.
-2. Minimal Wayland compositor prototype.
+2. Smithay nested backend prototype and dependency license audit.
 3. Window lifecycle and circular controls.
 4. Persistent bottom panel.
 5. Application launcher.
