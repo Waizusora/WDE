@@ -32,7 +32,7 @@ A successful build, a top-level crate license or a protocol's license does not p
 
 ## Cross-repository audit snapshot — 2026-11-16
 
-The latest completed 29-repository evidence run [43880910251](https://github.com/Waizusora/Wicofe-Tools/actions/runs/43880910251) recorded WDE at commit `df40aaa05ed2b5c4820773d244b0943784759750` (the subsequent WDE commit only updated the pinned auditor revision):
+The latest completed 29-repository evidence run [43880910251](https://github.com/Waizusora/Wicofe-Tools/actions/runs/43880910251) recorded WDE at commit `df40aaa05ed2b5c4820773d244b0943784759750` (subsequent WDE commits updated the auditor pin and documentation; dependency manifests were unchanged):
 
 | WDE finding | Result |
 |---|---:|
@@ -49,7 +49,7 @@ Re-audit is required when the workspace dependency graph, optional features, tar
 
 ## WDE CI system-package inventory — 2026-11-16
 
-The latest WDE CI run [43880983235](https://github.com/Waizusora/WDE/actions/runs/43880983235) completed successfully using Wicofe-Tools auditor revision `cccc4c197687ce8fd629f9b9d8a7d95d4e89cddc`. Its [build-environment evidence artifact 14231024109](https://github.com/Waizusora/WDE/actions/runs/43880983235/artifacts/14231024109) contains a separate installed-package inventory:
+The latest WDE CI run [43881760690](https://github.com/Waizusora/WDE/actions/runs/43881760690) completed successfully using Wicofe-Tools auditor revision `cccc4c197687ce8fd629f9b9d8a7d95d4e89cddc`. Its [build-environment evidence artifact 14232651762](https://github.com/Waizusora/WDE/actions/runs/43881760690/artifacts/14232651762) contains a separate installed-package inventory:
 
 | Status | Count |
 |---|---:|
