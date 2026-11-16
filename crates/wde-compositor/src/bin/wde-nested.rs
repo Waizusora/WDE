@@ -192,7 +192,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
     let mut display: Display<App> = Display::new()?;
-    let display_handle = display.handle();
+    let mut display_handle = display.handle();
 
     let compositor_state = CompositorState::new::<App>(&display_handle);
     let shm_state = ShmState::new::<App>(&display_handle, vec![]);
@@ -235,16 +235,14 @@ fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
                     );
                 }
                 InputEvent::PointerMotionAbsolute { .. } => {
-                    if let Some(surface) = state
+                    let focused_surface = state
                         .window_manager
                         .focused()
                         .and_then(|id| state.window_surfaces.get(&id))
-                    {
-                        keyboard.set_focus(
-                            &mut state,
-                            Some(surface.wl_surface().clone()),
-                            0.into(),
-                        );
+                        .map(|surface| surface.wl_surface().clone());
+
+                    if let Some(surface) = focused_surface {
+                        keyboard.set_focus(&mut state, Some(surface), 0.into());
                     }
                 }
                 _ => {}
