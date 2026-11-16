@@ -101,6 +101,7 @@ pub type WindowId = u64;
 pub struct ManagedWindow {
     pub id: WindowId,
     pub title: String,
+    pub app_id: Option<String>,
     pub state: WindowState,
 }
 
@@ -152,12 +153,31 @@ impl WindowManager {
             ManagedWindow {
                 id,
                 title: title.into(),
+                app_id: None,
                 state: WindowState::Normal,
             },
         );
         self.lifecycles.insert(id, WindowLifecycle::new());
         self.focused = Some(id);
         Ok(id)
+    }
+
+    /// Update client-provided metadata used by shell components.
+    pub fn update_metadata(
+        &mut self,
+        id: WindowId,
+        title: Option<String>,
+        app_id: Option<String>,
+    ) -> Result<(), WindowManagerError> {
+        let window = self
+            .windows
+            .get_mut(&id)
+            .ok_or(WindowManagerError::UnknownWindow(id))?;
+        if let Some(title) = title {
+            window.title = title;
+        }
+        window.app_id = app_id;
+        Ok(())
     }
 
     /// Focus an existing, non-minimized toplevel.
@@ -279,6 +299,7 @@ mod tests {
         assert_eq!((first, second), (0, 1));
         assert_eq!(manager.focused(), Some(second));
         assert_eq!(manager.get(first).unwrap().title, "Terminal");
+        assert_eq!(manager.get(first).unwrap().app_id, None);
     }
 
     #[test]
