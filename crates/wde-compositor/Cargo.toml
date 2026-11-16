@@ -24,7 +24,7 @@ required-features = ["nested-winit"]
 
 [dependencies]
 smithay = { version = "0.7.0", default-features = false, features = ["backend_winit", "renderer_gl", "wayland_frontend"], optional = true }
-winit = { version = "=0.31.0-beta.4", default-features = false, features = ["wayland", "wayland-dlopen", "x11"], optional = true }
+winit = { version = "=0.30.13", default-features = false, features = ["wayland", "wayland-dlopen", "x11"], optional = true }
 wayland-protocols = { version = "0.32.13", features = ["server", "unstable", "staging"], optional = true }
 wayland-server = { version = "0.31.13", optional = true }
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"], optional = true }
