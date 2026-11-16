@@ -23,7 +23,10 @@ use smithay::{
         winit::{self, WinitEvent},
     },
     delegate_compositor, delegate_data_device, delegate_seat, delegate_shm, delegate_xdg_shell,
-    input::{Seat, SeatHandler, SeatState, keyboard::{FilterResult, KeyboardHandle}},
+    input::{
+        Seat, SeatHandler, SeatState,
+        keyboard::{FilterResult, KeyboardHandle},
+    },
     reexports::wayland_server::{Display, protocol::wl_seat},
     utils::{Rectangle, Serial, Transform},
     wayland::{
