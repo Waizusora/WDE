@@ -57,9 +57,9 @@ The workspace currently contains architectural crate scaffolds. Smithay 0.7.0 is
 
 ## Dependency and licensing policy
 
-WDE's own source code is licensed under MPL-2.0. Third-party dependencies must be reviewed individually, including transitive dependencies and optional features. GNU GPL, LGPL, and AGPL dependencies are not permitted by the project's current policy. See [docs/licensing.md](docs/licensing.md).
+WDE follows the [binding Wicofe dependency license policy](https://github.com/Waizusora/Wicofe-ThirdParty/blob/main/policies/DEPENDENCY_LICENSE_POLICY_0.1.md): GPL and AGPL dependencies are prohibited; LGPL is conditionally eligible only when essential, not reasonably implementable in-house, legally reviewed and explicitly approved by the project owner; all other third-party dependency license families are disallowed unless the policy is formally amended. The same rule applies to transitive dependencies and optional features.
 
-Wayland protocol compatibility does not by itself determine the license of every implementation library or protocol extension.
+Wayland protocol compatibility does not by itself determine the license of every implementation library or protocol extension. Smithay and its complete enabled/transitive dependency closure must be assessed against the policy before distribution.
 
 ## Roadmap
 
