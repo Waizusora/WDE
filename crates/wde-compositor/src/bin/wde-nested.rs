@@ -29,8 +29,8 @@ use smithay::{
     wayland::{
         buffer::BufferHandler,
         compositor::{
-            with_states, CompositorClientState, CompositorHandler, CompositorState,
-            SurfaceAttributes, TraversalAction, with_surface_tree_downward,
+            CompositorClientState, CompositorHandler, CompositorState, SurfaceAttributes,
+            TraversalAction, with_states, with_surface_tree_downward,
         },
         selection::{
             SelectionHandler,
@@ -122,8 +122,14 @@ impl XdgShellHandler for App {
 
     fn maximize_request(&mut self, surface: ToplevelSurface) {
         if let Some(id) = self.window_id_for_surface(&surface) {
-            if self.window_manager.get(id).is_some_and(|window| window.state == WindowState::Normal) {
-                let _ = self.window_manager.apply(id, WindowAction::MaximizeOrRestore);
+            if self
+                .window_manager
+                .get(id)
+                .is_some_and(|window| window.state == WindowState::Normal)
+            {
+                let _ = self
+                    .window_manager
+                    .apply(id, WindowAction::MaximizeOrRestore);
             }
         }
         surface.with_pending_state(|state| {
@@ -134,8 +140,14 @@ impl XdgShellHandler for App {
 
     fn unmaximize_request(&mut self, surface: ToplevelSurface) {
         if let Some(id) = self.window_id_for_surface(&surface) {
-            if self.window_manager.get(id).is_some_and(|window| window.state == WindowState::Maximized) {
-                let _ = self.window_manager.apply(id, WindowAction::MaximizeOrRestore);
+            if self
+                .window_manager
+                .get(id)
+                .is_some_and(|window| window.state == WindowState::Maximized)
+            {
+                let _ = self
+                    .window_manager
+                    .apply(id, WindowAction::MaximizeOrRestore);
             }
         }
         surface.with_pending_state(|state| {
@@ -324,9 +336,10 @@ fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
                 .window_surfaces
                 .iter()
                 .filter(|(id, _)| {
-                    state.window_manager.get(**id).is_some_and(|window| {
-                        window.state != WindowState::Minimized
-                    })
+                    state
+                        .window_manager
+                        .get(**id)
+                        .is_some_and(|window| window.state != WindowState::Minimized)
                 })
                 .flat_map(|(_, surface)| {
                     render_elements_from_surface_tree(
