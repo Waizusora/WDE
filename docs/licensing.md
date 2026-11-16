@@ -47,6 +47,23 @@ The WDE CI workflow pins the Rust toolchain to 1.100.0, pins action source revis
 
 Re-audit is required when the workspace dependency graph, optional features, target matrix, CI workflow, toolchain, system packages or distribution scope changes. WDE is not approved for release distribution until the applicable records are reviewed and the final image inventory is reconciled.
 
+## WDE CI system-package inventory — 2026-11-16
+
+The latest WDE CI run [43880983235](https://github.com/Waizusora/WDE/actions/runs/43880983235) completed successfully using Wicofe-Tools auditor revision `cccc4c197687ce8fd629f9b9d8a7d95d4e89cddc`. Its [build-environment evidence artifact 14231024109](https://github.com/Waizusora/WDE/actions/runs/43880983235/artifacts/14231024109) contains a separate installed-package inventory:
+
+| Status | Count |
+|---|---:|
+| NEEDS_REVIEW | 19 |
+| UNKNOWN | 13 |
+| REJECTED | 0 |
+| Total | 32 |
+
+Fourteen GLVND/Mesa package records have MIT as the primary `Files: *` license but also contain GPL-3+ declarations in non-default copyright stanzas. They remain NEEDS_REVIEW until the installed binary payload is mapped to the relevant copyright stanzas; a secondary GPL notice is not automatically treated as proof that the installed binary contains that code, and it is not ignored.
+
+The 13 UNKNOWN package identities are `libx11-dev`, `libxau-dev`, `libxcb1-dev`, `libxcursor-dev`, `libxext-dev`, `libxfixes-dev`, `libxi-dev`, `libxinerama-dev`, `libxkbcommon-dev`, `libxrandr-dev`, `libxrender-dev`, `xorg-sgml-doctools` and `xtrans-dev`. Their exact source package/license evidence is not established by this artifact.
+
+This package inventory is separate from the 239-record source/build graph. It must be reconciled with the exact WDE target image and final SBOM. The successful WDE CI run does not approve these packages or establish release compliance.
+
 ## Wayland note
 
 The Wayland protocol and individual implementation libraries are separate things. Review the license of each library and each protocol extension actually shipped. Do not infer the license of a dependency from the protocol name.
