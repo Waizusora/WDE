@@ -29,8 +29,8 @@ use smithay::{
     wayland::{
         buffer::BufferHandler,
         compositor::{
-            CompositorClientState, CompositorHandler, CompositorState, SurfaceAttributes,
-            TraversalAction, with_surface_tree_downward,
+            with_states, CompositorClientState, CompositorHandler, CompositorState,
+            SurfaceAttributes, TraversalAction, with_surface_tree_downward,
         },
         selection::{
             SelectionHandler,
@@ -40,6 +40,7 @@ use smithay::{
         },
         shell::xdg::{
             PopupSurface, PositionerState, ToplevelSurface, XdgShellHandler, XdgShellState,
+            XdgToplevelSurfaceData,
         },
         shm::{ShmHandler, ShmState},
     },
@@ -53,7 +54,7 @@ use wayland_server::{
         wl_surface::{self, WlSurface},
     },
 };
-use wde_compositor::{WindowId, WindowManager};
+use wde_compositor::{WindowAction, WindowId, WindowManager, WindowState};
 
 struct App {
     compositor_state: CompositorState,
@@ -69,6 +70,28 @@ struct App {
 #[derive(Default)]
 struct ClientState {
     compositor_state: CompositorClientState,
+}
+
+impl App {
+    fn window_id_for_surface(&self, surface: &ToplevelSurface) -> Option<WindowId> {
+        self.window_surfaces
+            .iter()
+            .find_map(|(id, managed)| (managed == surface).then_some(*id))
+    }
+
+    fn sync_toplevel_metadata(&mut self, surface: &ToplevelSurface) {
+        let Some(id) = self.window_id_for_surface(surface) else {
+            return;
+        };
+        let metadata = with_states(surface.wl_surface(), |states| {
+            let data = states.data_map.get::<XdgToplevelSurfaceData>()?;
+            let attributes = data.lock().ok()?;
+            Some((attributes.title.clone(), attributes.app_id.clone()))
+        });
+        if let Some((title, app_id)) = metadata {
+            let _ = self.window_manager.update_metadata(id, title, app_id);
+        }
+    }
 }
 
 impl ClientData for ClientState {
@@ -88,12 +111,51 @@ impl XdgShellHandler for App {
     fn new_toplevel(&mut self, surface: ToplevelSurface) {
         if let Ok(id) = self.window_manager.register("Window") {
             self.window_surfaces.insert(id, surface.clone());
+            self.sync_toplevel_metadata(&surface);
         }
 
         surface.with_pending_state(|state| {
             state.states.set(xdg_toplevel::State::Activated);
         });
         surface.send_configure();
+    }
+
+    fn maximize_request(&mut self, surface: ToplevelSurface) {
+        if let Some(id) = self.window_id_for_surface(&surface) {
+            if self.window_manager.get(id).is_some_and(|window| window.state == WindowState::Normal) {
+                let _ = self.window_manager.apply(id, WindowAction::MaximizeOrRestore);
+            }
+        }
+        surface.with_pending_state(|state| {
+            state.states.set(xdg_toplevel::State::Maximized);
+        });
+        surface.send_configure();
+    }
+
+    fn unmaximize_request(&mut self, surface: ToplevelSurface) {
+        if let Some(id) = self.window_id_for_surface(&surface) {
+            if self.window_manager.get(id).is_some_and(|window| window.state == WindowState::Maximized) {
+                let _ = self.window_manager.apply(id, WindowAction::MaximizeOrRestore);
+            }
+        }
+        surface.with_pending_state(|state| {
+            state.states.unset(xdg_toplevel::State::Maximized);
+        });
+        surface.send_configure();
+    }
+
+    fn minimize_request(&mut self, surface: ToplevelSurface) {
+        if let Some(id) = self.window_id_for_surface(&surface) {
+            let _ = self.window_manager.apply(id, WindowAction::Minimize);
+        }
+    }
+
+    fn app_id_changed(&mut self, surface: ToplevelSurface) {
+        self.sync_toplevel_metadata(&surface);
+    }
+
+    fn title_changed(&mut self, surface: ToplevelSurface) {
+        self.sync_toplevel_metadata(&surface);
     }
 
     fn new_popup(&mut self, _surface: PopupSurface, _positioner: PositionerState) {}
@@ -259,10 +321,14 @@ fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
         {
             let (renderer, mut framebuffer) = backend.bind()?;
             let elements = state
-                .xdg_shell_state
-                .toplevel_surfaces()
+                .window_surfaces
                 .iter()
-                .flat_map(|surface| {
+                .filter(|(id, _)| {
+                    state.window_manager.get(**id).is_some_and(|window| {
+                        window.state != WindowState::Minimized
+                    })
+                })
+                .flat_map(|(_, surface)| {
                     render_elements_from_surface_tree(
                         renderer,
                         surface.wl_surface(),
