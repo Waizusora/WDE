@@ -32,7 +32,7 @@ A successful build, a top-level crate license or a protocol's license does not p
 
 ## Cross-repository audit snapshot — 2026-11-16
 
-The latest completed 29-repository evidence run [43881861767](https://github.com/Waizusora/Wicofe-Tools/actions/runs/43881861767) recorded WDE at commit `df40aaa05ed2b5c4820773d244b0943784759750` (subsequent WDE commits updated the auditor pin and documentation; dependency manifests were unchanged):
+The latest completed 29-repository evidence run [43881861767](https://github.com/Waizusora/Wicofe-Tools/actions/runs/43881861767) recorded WDE at commit `ee8f12326ebb7054668bab31a5b89432dfffbf8e` (subsequent WDE commits updated the auditor pin and documentation; dependency manifests were unchanged):
 
 | WDE finding | Result |
 |---|---:|
