@@ -30,6 +30,23 @@ Do not treat any license label as automatic approval. Evaluate the complete tran
 
 A successful build, a top-level crate license or a protocol's license does not prove that the entire dependency closure is approved.
 
+## Cross-repository audit snapshot — 2026-11-16
+
+The latest completed 29-repository evidence run recorded WDE at commit `471c66ed8951295d9f8533c0a43c786ffe552074`:
+
+| WDE finding | Result |
+|---|---:|
+| Dependency/build-time records | 239 |
+| NEEDS_REVIEW | 220 |
+| UNKNOWN | 19 |
+| REJECTED | 0 |
+
+No GPL/AGPL record was identified in the WDE records in this snapshot. This is **not** a PASS or compliance approval: 220 records still require scoped human review, and 19 records remain UNKNOWN. The records include the resolved Cargo dependency closure and build/CI dependencies. The exact package versions, evidence, enabled features and parent edges are in the [cross-repository audit artifact](https://github.com/Waizusora/Wicofe-Tools/actions/runs/43878335380/artifacts/14231212277).
+
+The WDE CI workflow pins the Rust toolchain to 1.100.0, pins action source revisions, and captures installed system-package deltas for license inventory. Runner-image and system-package evidence is still incomplete; a pinned runner label or a package delta is not a complete immutable build-environment SBOM.
+
+Re-audit is required when the workspace dependency graph, optional features, target matrix, CI workflow, toolchain, system packages or distribution scope changes. WDE is not approved for release distribution until the applicable records are reviewed and the final image inventory is reconciled.
+
 ## Wayland note
 
 The Wayland protocol and individual implementation libraries are separate things. Review the license of each library and each protocol extension actually shipped. Do not infer the license of a dependency from the protocol name.
