@@ -32,7 +32,7 @@ A successful build, a top-level crate license or a protocol's license does not p
 
 ## Cross-repository audit snapshot — 2026-11-16
 
-The latest completed 29-repository evidence run [43880910251](https://github.com/Waizusora/Wicofe-Tools/actions/runs/43880910251) recorded WDE at commit `df40aaa05ed2b5c4820773d244b0943784759750` (subsequent WDE commits updated the auditor pin and documentation; dependency manifests were unchanged):
+The latest completed 29-repository evidence run [43881861767](https://github.com/Waizusora/Wicofe-Tools/actions/runs/43881861767) recorded WDE at commit `df40aaa05ed2b5c4820773d244b0943784759750` (subsequent WDE commits updated the auditor pin and documentation; dependency manifests were unchanged):
 
 | WDE finding | Result |
 |---|---:|
@@ -41,7 +41,7 @@ The latest completed 29-repository evidence run [43880910251](https://github.com
 | UNKNOWN | 19 |
 | REJECTED | 0 |
 
-No GPL/AGPL record was identified in the WDE records in this snapshot. This is **not** a PASS or compliance approval: 220 records still require scoped human review, and 19 records remain UNKNOWN. The records include the resolved Cargo dependency closure and build/CI dependencies. The exact package versions, evidence, enabled features and parent edges are in the [cross-repository audit artifact](https://github.com/Waizusora/Wicofe-Tools/actions/runs/43880910251/artifacts/14233220400).
+No GPL/AGPL record was identified in the WDE records in this snapshot. This is **not** a PASS or compliance approval: 220 records still require scoped human review, and 19 records remain UNKNOWN. The records include the resolved Cargo dependency closure and build/CI dependencies. The exact package versions, evidence, enabled features and parent edges are in the [cross-repository audit artifact](https://github.com/Waizusora/Wicofe-Tools/actions/runs/43881861767/artifacts/14233016601).
 
 The WDE CI workflow pins the Rust toolchain to 1.100.0, pins action source revisions, and captures installed system-package deltas for license inventory. Runner-image and system-package evidence is still incomplete; a pinned runner label or a package delta is not a complete immutable build-environment SBOM.
 
