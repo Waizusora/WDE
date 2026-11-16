@@ -23,7 +23,7 @@ use smithay::{
         winit::{self, WinitEvent},
     },
     delegate_compositor, delegate_data_device, delegate_seat, delegate_shm, delegate_xdg_shell,
-    input::{Seat, SeatHandler, SeatState, keyboard::FilterResult},
+    input::{Seat, SeatHandler, SeatState, keyboard::{FilterResult, KeyboardHandle}},
     reexports::wayland_server::{Display, protocol::wl_seat},
     utils::{Rectangle, Serial, Transform},
     wayland::{
@@ -63,6 +63,7 @@ struct App {
     seat_state: SeatState<Self>,
     data_device_state: DataDeviceState,
     seat: Seat<Self>,
+    keyboard: Option<KeyboardHandle<Self>>,
     window_manager: WindowManager,
     window_surfaces: BTreeMap<WindowId, ToplevelSurface>,
 }
@@ -77,6 +78,17 @@ impl App {
         self.window_surfaces
             .iter()
             .find_map(|(id, managed)| (managed == surface).then_some(*id))
+    }
+
+    fn sync_keyboard_focus(&mut self) {
+        let focused_surface = self
+            .window_manager
+            .focused()
+            .and_then(|id| self.window_surfaces.get(&id))
+            .map(|surface| surface.wl_surface().clone());
+        if let Some(keyboard) = self.keyboard.clone() {
+            keyboard.set_focus(self, focused_surface, 0.into());
+        }
     }
 
     fn sync_toplevel_metadata(&mut self, surface: &ToplevelSurface) {
@@ -112,6 +124,7 @@ impl XdgShellHandler for App {
         if let Ok(id) = self.window_manager.register("Window") {
             self.window_surfaces.insert(id, surface.clone());
             self.sync_toplevel_metadata(&surface);
+            self.sync_keyboard_focus();
         }
 
         surface.with_pending_state(|state| {
@@ -159,6 +172,11 @@ impl XdgShellHandler for App {
     fn minimize_request(&mut self, surface: ToplevelSurface) {
         if let Some(id) = self.window_id_for_surface(&surface) {
             let _ = self.window_manager.apply(id, WindowAction::Minimize);
+            surface.with_pending_state(|state| {
+                state.states.unset(xdg_toplevel::State::Activated);
+            });
+            surface.send_configure();
+            self.sync_keyboard_focus();
         }
     }
 
@@ -189,6 +207,7 @@ impl XdgShellHandler for App {
         if let Some(id) = id {
             self.window_surfaces.remove(&id);
             let _ = self.window_manager.unregister(id);
+            self.sync_keyboard_focus();
         }
     }
 }
@@ -280,6 +299,7 @@ fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
         seat_state,
         data_device_state: DataDeviceState::new::<App>(&display_handle),
         seat,
+        keyboard: None,
         window_manager: WindowManager::new(),
         window_surfaces: BTreeMap::new(),
     };
@@ -293,6 +313,7 @@ fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
     let (mut backend, mut event_loop) = winit::init::<GlesRenderer>()?;
     let start_time = Instant::now();
     let keyboard = state.seat.add_keyboard(Default::default(), 200, 200)?;
+    state.keyboard = Some(keyboard.clone());
 
     loop {
         let status = event_loop.dispatch_new_events(|event| match event {
@@ -309,15 +330,10 @@ fn run_nested() -> Result<(), Box<dyn std::error::Error>> {
                     );
                 }
                 InputEvent::PointerMotionAbsolute { .. } => {
-                    let focused_surface = state
-                        .window_manager
-                        .focused()
-                        .and_then(|id| state.window_surfaces.get(&id))
-                        .map(|surface| surface.wl_surface().clone());
-
-                    if let Some(surface) = focused_surface {
-                        keyboard.set_focus(&mut state, Some(surface), 0.into());
-                    }
+                    // Pointer hit-testing is implemented in the next input milestone.
+                    // Until then, keep keyboard focus synchronized with the window
+                    // manager's selected visible toplevel.
+                    state.sync_keyboard_focus();
                 }
                 _ => {}
             },
