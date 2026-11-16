@@ -71,3 +71,7 @@ Wayland protocol compatibility does not by itself determine the license of every
 6. Settings, session integration, and performance work.
 
 See [docs/architecture.md](docs/architecture.md) for the initial architecture.
+
+## Documentation index
+
+See [docs/INDEX.md](docs/INDEX.md) for this repository's technical documentation. The [central repository documentation map](https://github.com/Waizusora/Wicofe-Docs/blob/main/REPOSITORY_DOCUMENTATION_MAP.md) identifies canonical ownership and cross-repository boundaries.
